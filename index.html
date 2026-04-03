@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐾 宠物大冒险 - Pet Adventure</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 游戏标题 -->
+        <header class="game-header">
+            <h1>🐾 宠物大冒险</h1>
+            <div class="player-stats">
+                <span id="player-level">Lv.5</span>
+                <span id="player-coins">💰 100</span>
+            </div>
+        </header>
+
+        <!-- 主菜单 -->
+        <div id="main-menu" class="screen active">
+            <div class="menu-grid">
+                <button class="menu-btn" data-screen="explore">
+                    <span class="icon">🗺️</span>
+                    <span>探索地图</span>
+                </button>
+                <button class="menu-btn" data-screen="pets">
+                    <span class="icon">🎒</span>
+                    <span>我的宠物</span>
+                </button>
+                <button class="menu-btn" data-screen="pokedex">
+                    <span class="icon">📖</span>
+                    <span>宠物图鉴</span>
+                </button>
+                <button class="menu-btn" data-screen="battle-npc">
+                    <span class="icon">⚔️</span>
+                    <span>挑战训练师</span>
+                </button>
+                <button class="menu-btn" data-screen="shop">
+                    <span class="icon">🏪</span>
+                    <span>道具商店</span>
+                </button>
+                <button class="menu-btn" data-screen="settings">
+                    <span class="icon">⚙️</span>
+                    <span>设置</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 地图探索 -->
+        <div id="explore-screen" class="screen">
+            <h2>🗺️ 选择探索区域</h2>
+            <div class="map-grid">
+                <div class="map-area" data-area="meadow" data-min-level="1">
+                    <span class="area-icon">🌿</span>
+                    <h3>青青草原</h3>
+                    <p>适合新手的区域</p>
+                    <span class="level-req">Lv.1+</span>
+                </div>
+                <div class="map-area" data-area="forest" data-min-level="5">
+                    <span class="area-icon">🌲</span>
+                    <h3>神秘森林</h3>
+                    <p>草系宠物的家园</p>
+                    <span class="level-req">Lv.5+</span>
+                </div>
+                <div class="map-area" data-area="cave" data-min-level="10">
+                    <span class="area-icon">⛰️</span>
+                    <h3>幽暗山洞</h3>
+                    <p>暗系宠物出没</p>
+                    <span class="level-req">Lv.10+</span>
+                </div>
+                <div class="map-area" data-area="lake" data-min-level="15">
+                    <span class="area-icon">💧</span>
+                    <h3>宁静湖泊</h3>
+                    <p>水系宠物的聚集地</p>
+                    <span class="level-req">Lv.15+</span>
+                </div>
+                <div class="map-area" data-area="volcano" data-min-level="20">
+                    <span class="area-icon">🌋</span>
+                    <h3>烈焰火山</h3>
+                    <p>火系宠物的领地</p>
+                    <span class="level-req">Lv.20+</span>
+                </div>
+            </div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 探索中 -->
+        <div id="exploring-screen" class="screen">
+            <div class="exploring-area">
+                <h2 id="current-area-name">正在探索...</h2>
+                <div class="area-visual">
+                    <div class="wild-encounter-spot" id="encounter-spot">
+                        <span class="grass-rustle">🌿</span>
+                    </div>
+                </div>
+                <p id="explore-status">草丛中似乎有什么动静...</p>
+                <button id="search-btn" class="action-btn">🔍 仔细搜索</button>
+                <button class="back-btn">⬅️ 离开</button>
+            </div>
+        </div>
+
+        <!-- 战斗界面 -->
+        <div id="battle-screen" class="screen">
+            <div class="battle-arena">
+                <!-- 敌方宠物 -->
+                <div class="battle-side enemy-side">
+                    <div class="pet-info">
+                        <span id="enemy-name">野生宠物</span>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="enemy-hp-bar"></div>
+                            <span id="enemy-hp-text">20/20</span>
+                        </div>
+                        <span id="enemy-level" class="level-badge">Lv.1</span>
+                    </div>
+                    <div class="pet-sprite" id="enemy-sprite">
+                        <span class="pet-emoji">❓</span>
+                    </div>
+                </div>
+
+                <!-- VS 标志 -->
+                <div class="vs-indicator">⚡ VS ⚡</div>
+
+                <!-- 我方宠物 -->
+                <div class="battle-side player-side">
+                    <div class="pet-sprite" id="player-sprite">
+                        <span class="pet-emoji">❓</span>
+                    </div>
+                    <div class="pet-info">
+                        <span id="player-pet-name">我的宠物</span>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="player-hp-bar"></div>
+                            <span id="player-hp-text">20/20</span>
+                        </div>
+                        <span id="player-pet-level" class="level-badge">Lv.1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 战斗日志 -->
+            <div class="battle-log" id="battle-log">
+                <p>战斗开始！</p>
+            </div>
+
+            <!-- 战斗操作 -->
+            <div class="battle-actions" id="battle-actions">
+                <button class="battle-btn" data-action="attack">⚔️ 普通攻击</button>
+                <button class="battle-btn" data-action="skill">✨ 使用技能</button>
+                <button class="battle-btn" data-action="item">🎒 使用道具</button>
+                <button class="battle-btn" data-action="catch">🎯 捕捉</button>
+                <button class="battle-btn" data-action="switch">🔄 切换宠物</button>
+                <button class="battle-btn" data-action="run">🏃 逃跑</button>
+            </div>
+
+            <!-- 技能选择 -->
+            <div class="skill-select" id="skill-select" style="display: none;">
+                <div class="skills-grid" id="skills-grid"></div>
+                <button class="back-btn-small">⬅️ 返回</button>
+            </div>
+
+            <!-- 道具选择 -->
+            <div class="item-select" id="item-select" style="display: none;">
+                <div class="items-grid" id="items-grid"></div>
+                <button class="back-btn-small">⬅️ 返回</button>
+            </div>
+
+            <!-- 切换宠物 -->
+            <div class="switch-select" id="switch-select" style="display: none;">
+                <div class="switch-grid" id="switch-grid"></div>
+                <button class="back-btn-small">⬅️ 返回</button>
+            </div>
+        </div>
+
+        <!-- 我的宠物 -->
+        <div id="pets-screen" class="screen">
+            <h2>🎒 我的宠物队伍</h2>
+            <div class="pets-list" id="pets-list"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 宠物详情 -->
+        <div id="pet-detail-screen" class="screen">
+            <div class="pet-detail-card" id="pet-detail-card"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 宠物图鉴 -->
+        <div id="pokedex-screen" class="screen">
+            <h2>📖 宠物图鉴</h2>
+            <div class="pokedex-stats">
+                <span id="pokedex-count">已收集: 0/25</span>
+                <span id="pokedex-percent">0%</span>
+            </div>
+            <div class="pokedex-filter">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="fire">🔥 火</button>
+                <button class="filter-btn" data-filter="water">💧 水</button>
+                <button class="filter-btn" data-filter="grass">🌿 草</button>
+                <button class="filter-btn" data-filter="electric">⚡ 电</button>
+                <button class="filter-btn" data-filter="earth">🪨 土</button>
+                <button class="filter-btn" data-filter="dark">🌑 暗</button>
+            </div>
+            <div class="pokedex-grid" id="pokedex-grid"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 图鉴详情 -->
+        <div id="pokedex-detail-screen" class="screen">
+            <div class="pokedex-detail-card" id="pokedex-detail-card"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- NPC对战 -->
+        <div id="battle-npc-screen" class="screen">
+            <h2>⚔️ 选择挑战对象</h2>
+            <div class="npc-list" id="npc-list"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 商店 -->
+        <div id="shop-screen" class="screen">
+            <h2>🏪 道具商店</h2>
+            <div class="shop-coins">💰 <span id="shop-coins">100</span></div>
+            <div class="shop-items" id="shop-items"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 设置 -->
+        <div id="settings-screen" class="screen">
+            <h2>⚙️ 设置</h2>
+            <div class="settings-list">
+                <div class="setting-item">
+                    <span>音效</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>动画效果</span>
+                    <label class="switch">
+                        <input type="checkbox" id="anim-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <button id="save-btn" class="setting-btn">💾 手动存档</button>
+                </div>
+                <div class="setting-item">
+                    <button id="load-btn" class="setting-btn">📂 读取存档</button>
+                </div>
+                <div class="setting-item">
+                    <button id="reset-btn" class="setting-btn danger">🗑️ 重置游戏</button>
+                </div>
+                <div class="setting-item">
+                    <button id="test-btn" class="setting-btn">🧪 运行测试</button>
+                </div>
+            </div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 测试结果显示 -->
+        <div id="test-result-screen" class="screen">
+            <h2>🧪 测试结果</h2>
+            <div class="test-results" id="test-results"></div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="toast" class="toast"></div>
+
+        <!-- 确认对话框 -->
+        <div id="confirm-dialog" class="dialog-overlay">
+            <div class="dialog-box">
+                <p id="confirm-message">确认操作？</p>
+                <div class="dialog-buttons">
+                    <button id="confirm-yes" class="btn-yes">确定</button>
+                    <button id="confirm-no" class="btn-no">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/pet-data.js"></script>
+    <script src="src/game-engine.js"></script>
+    <script src="src/battle-system.js"></script>
+    <script src="src/catch-system.js"></script>
+    <script src="src/ui-controller.js"></script>
+    <script src="src/test-suite.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>
