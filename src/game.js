@@ -3,6 +3,7 @@
 let game;
 let battle;
 let ui;
+let dailyQuestSystem;
 
 // 初始化游戏
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,12 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
     battle = new BattleSystem(game);
     ui = new UIController(game, battle);
     
+    // 初始化每日任务系统
+    dailyQuestSystem = new DailyQuestSystem(game);
+    dailyQuestSystem.init();
+    
     // 应用设置
     document.getElementById('sound-toggle').checked = game.settings.sound;
     document.getElementById('anim-toggle').checked = game.settings.animation;
     
     // 更新UI
     ui.updateHeader();
+    ui.updateQuestBadge();
     
     // 显示欢迎提示
     const activePet = game.player.pets[game.player.activePetIndex];
@@ -25,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('🐾 宠物大冒险 已加载！');
     console.log('当前出战宠物:', game.player.pets[game.player.activePetIndex]?.name);
+    console.log('✨ 闪光系统已启用，遭遇率 1/4096');
+    console.log('📋 每日任务系统已启用');
 });
 
 // 防止页面滚动

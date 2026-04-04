@@ -386,6 +386,7 @@ class BattleSystem {
             exp: 0,
             coins: 0,
             caught: this.state.caught,
+            caughtPet: this.state.caught ? this.state.enemyPet : null,
             escaped: this.state.escaped,
             log: []
         };

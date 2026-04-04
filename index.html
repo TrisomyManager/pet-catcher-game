@@ -33,6 +33,11 @@
                     <span class="icon">📖</span>
                     <span>宠物图鉴</span>
                 </button>
+                <button class="menu-btn" data-screen="daily-quest">
+                    <span class="icon">📋</span>
+                    <span>每日任务</span>
+                    <span class="quest-badge" id="quest-badge" style="display:none">!</span>
+                </button>
                 <button class="menu-btn" data-screen="battle-npc">
                     <span class="icon">⚔️</span>
                     <span>挑战训练师</span>
@@ -211,6 +216,19 @@
             <button class="back-btn">⬅️ 返回</button>
         </div>
 
+        <!-- 每日任务 -->
+        <div id="daily-quest-screen" class="screen">
+            <h2>📋 每日任务</h2>
+            <div class="quest-date" id="quest-date">2024-01-01</div>
+            <div class="quest-progress" id="quest-progress">完成进度: 0/3</div>
+            <div class="quest-list" id="quest-list"></div>
+            <div class="quest-reward-hint">
+                <p>💡 完成任务可获得金币和经验奖励！</p>
+                <p>⏰ 任务每天 0:00 自动刷新</p>
+            </div>
+            <button class="back-btn">⬅️ 返回</button>
+        </div>
+
         <!-- NPC对战 -->
         <div id="battle-npc-screen" class="screen">
             <h2>⚔️ 选择挑战对象</h2>
@@ -283,6 +301,7 @@
     </div>
 
     <script src="src/pet-data.js"></script>
+    <script src="src/daily-quest.js"></script>
     <script src="src/game-engine.js"></script>
     <script src="src/battle-system.js"></script>
     <script src="src/catch-system.js"></script>

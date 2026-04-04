@@ -45,7 +45,7 @@ class GameEngine {
     }
 
     // 创建宠物实例
-    createPet(petId, level = 1) {
+    createPet(petId, level = 1, forceShiny = false) {
         const data = PETS_DATA[petId];
         if (!data) return null;
 
@@ -57,6 +57,9 @@ class GameEngine {
         };
 
         const stats = this.calculateStats(data.baseStats, level, ivs);
+        
+        // 闪光判定: 1/4096 概率
+        const isShiny = forceShiny || Math.random() < (1/4096);
         
         return {
             id: petId,
@@ -72,7 +75,9 @@ class GameEngine {
             stats: stats,
             currentHp: stats.hp,
             skills: this.getSkillsForLevel(data, level),
-            data: data
+            data: data,
+            isShiny: isShiny,
+            catchDate: isShiny ? new Date().toISOString() : null
         };
     }
 
@@ -279,7 +284,13 @@ class GameEngine {
             player: {
                 ...this.player,
                 pokedex: Array.from(this.player.pokedex),
-                defeatedTrainers: Array.from(this.player.defeatedTrainers)
+                defeatedTrainers: Array.from(this.player.defeatedTrainers),
+                // 保存闪光宠物捕获记录
+                shinyPets: this.player.pets.filter(p => p.isShiny).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    catchDate: p.catchDate
+                }))
             },
             settings: this.settings,
             timestamp: Date.now()
@@ -299,6 +310,18 @@ class GameEngine {
                         pokedex: new Set(parsed.player.pokedex || []),
                         defeatedTrainers: new Set(parsed.player.defeatedTrainers || [])
                     };
+                    // 恢复闪光宠物数据
+                    if (this.player.pets) {
+                        this.player.pets.forEach(pet => {
+                            if (parsed.player.shinyPets) {
+                                const shinyRecord = parsed.player.shinyPets.find(sp => sp.id === pet.id);
+                                if (shinyRecord) {
+                                    pet.isShiny = true;
+                                    pet.catchDate = shinyRecord.catchDate;
+                                }
+                            }
+                        });
+                    }
                 }
                 if (parsed.settings) {
                     this.settings = parsed.settings;
