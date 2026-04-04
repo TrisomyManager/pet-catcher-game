@@ -1,0 +1,1615 @@
+/* ===== 手游版样式 ===== */
+/* 专为移动设备优化的UI设计 */
+
+:root {
+    --primary: #ff6b6b;
+    --primary-dark: #ee5a5a;
+    --secondary: #4ecdc4;
+    --accent: #ffe66d;
+    --bg-dark: #1a1a2e;
+    --bg-light: #16213e;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-card-hover: rgba(255, 255, 255, 0.1);
+    --text-light: #fff;
+    --text-muted: #999;
+    --text-secondary: #ccc;
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    /* 属性颜色 */
+    --fire: #ff6b6b;
+    --water: #4a90e2;
+    --grass: #7ed321;
+    --electric: #f5a623;
+    --earth: #8b572a;
+    --dark: #6c5ce7;
+    
+    /* 血条颜色 */
+    --hp-green: #00d26a;
+    --hp-yellow: #ffd93d;
+    --hp-red: #ff4757;
+    
+    /* 安全区域 */
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+    --nav-height: 64px;
+    --header-height: 56px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+#game-container {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ===== 顶部状态栏 ===== */
+.game-header {
+    height: var(--header-height);
+    padding: 0 16px;
+    padding-top: var(--safe-top);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#player-level {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.player-coins {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.coin-icon {
+    font-size: 0.9rem;
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+    background: var(--bg-card-hover);
+}
+
+/* ===== 主内容区域 ===== */
+.main-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px);
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* 页面头部 */
+.screen-header {
+    height: var(--header-height);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.screen-header.transparent {
+    background: transparent;
+    border-bottom: none;
+    position: absolute;
+    width: 100%;
+}
+
+.nav-back {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.nav-back:active {
+    background: var(--bg-card-hover);
+}
+
+.screen-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.header-stats {
+    font-size: 0.9rem;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.placeholder {
+    width: 40px;
+}
+
+/* ===== 首页/基地 ===== */
+#home-screen {
+    padding: 20px 16px;
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px);
+}
+
+/* 当前宠物展示 */
+.active-pet-showcase {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-light) 100%);
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.pet-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.pet-avatar-large {
+    width: 120px;
+    height: 120px;
+    font-size: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    margin-bottom: 12px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.pet-status-badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.badge {
+    padding: 4px 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge.level-badge {
+    background: var(--accent);
+    color: var(--bg-dark);
+}
+
+.pet-quick-info {
+    text-align: center;
+}
+
+.pet-quick-info h2 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+}
+
+.hp-bar-mini {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--hp-green), #00ff88);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.hp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 快捷操作区 */
+.quick-actions {
+    margin-bottom: 20px;
+}
+
+.action-card {
+    width: 100%;
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+    border: none;
+    color: var(--text-light);
+}
+
+.action-card.primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+}
+
+.action-card:active {
+    transform: scale(0.98);
+}
+
+.action-card.primary:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.2);
+}
+
+.card-icon {
+    font-size: 2rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.action-row .action-card {
+    margin-bottom: 0;
+}
+
+.action-row .card-icon {
+    font-size: 1.5rem;
+}
+
+.action-row .card-title {
+    font-size: 1rem;
+}
+
+/* 每日任务预览 */
+.daily-quest-preview {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.daily-quest-preview:active {
+    background: var(--bg-card-hover);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.preview-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.preview-progress {
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.quest-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    background: var(--hp-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.preview-tasks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mini-task {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+/* ===== 探索页面 ===== */
+#explore-screen {
+    background: var(--bg-dark);
+}
+
+.area-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.area-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.area-card:active {
+    background: var(--bg-card-hover);
+    transform: scale(0.99);
+}
+
+.area-card.locked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.area-bg {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.area-icon {
+    font-size: 2rem;
+}
+
+.area-info {
+    flex: 1;
+}
+
+.area-info h3 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.area-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.area-meta {
+    display: flex;
+    gap: 8px;
+}
+
+.level-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.area-type {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: var(--bg-card-hover);
+    border-radius: 6px;
+    color: var(--text-muted);
+}
+
+.area-arrow {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+}
+
+/* ===== 探索中 ===== */
+#exploring-screen {
+    padding: 20px 16px;
+    justify-content: space-between;
+}
+
+.explore-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.area-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: var(--text-secondary);
+}
+
+.encounter-zone {
+    width: 200px;
+    height: 200px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    border: 2px solid var(--border-color);
+}
+
+.grass-animation {
+    font-size: 5rem;
+    animation: grassSway 2s ease-in-out infinite;
+}
+
+@keyframes grassSway {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.encounter-status {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.explore-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.big-action-btn {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.big-action-btn.primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+}
+
+.big-action-btn.secondary {
+    background: var(--bg-card);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+}
+
+.big-action-btn:active {
+    transform: scale(0.98);
+}
+
+/* ===== 战斗界面 ===== */
+#battle-screen {
+    padding: 0;
+    background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+}
+
+.battle-top, .battle-bottom {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.battle-top {
+    padding-top: calc(16px + var(--safe-top));
+}
+
+.enemy-info, .player-info {
+    flex: 1;
+}
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.pet-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.level-tag {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: var(--bg-card);
+    border-radius: 6px;
+}
+
+.hp-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hp-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.hp-bar {
+    height: 100%;
+    background: var(--hp-green);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.hp-bar.yellow {
+    background: var(--hp-yellow);
+}
+
+.hp-bar.red {
+    background: var(--hp-red);
+}
+
+.hp-text {
+    font-size: 0.75rem;
+    min-width: 40px;
+    text-align: right;
+}
+
+.pet-sprite {
+    width: 70px;
+    height: 70px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pet-emoji {
+    font-size: 3rem;
+}
+
+.battle-arena {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.vs-badge {
+    width: 50px;
+    height: 50px;
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.battle-log {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 16px;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.log-content {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.battle-controls {
+    padding: 16px;
+    padding-bottom: calc(16px + var(--safe-bottom));
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-color);
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.control-btn {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-light);
+    padding: 0;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    background: var(--bg-card-hover);
+}
+
+.control-btn .btn-icon {
+    font-size: 1.4rem;
+}
+
+.control-btn span:last-child {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.control-btn.attack {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: transparent;
+}
+
+.control-btn.skill {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    border-color: transparent;
+}
+
+.control-btn.catch {
+    background: linear-gradient(135deg, var(--secondary) 0%, #3dbdb4 100%);
+    border-color: transparent;
+}
+
+.control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.control-row .control-btn {
+    aspect-ratio: auto;
+    height: 44px;
+    flex-direction: row;
+    gap: 6px;
+}
+
+/* 战斗面板 */
+.battle-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-dark);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border-color);
+    max-height: 60vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.panel-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: var(--bg-dark);
+    z-index: 1;
+}
+
+.panel-header h3 {
+    font-size: 1rem;
+}
+
+.panel-close {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.skills-grid, .items-grid, .switch-grid, .catch-grid {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ===== 宠物列表 ===== */
+#pets-screen {
+    background: var(--bg-dark);
+}
+
+.pets-grid {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.pet-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pet-card.active {
+    border-color: var(--accent);
+    background: rgba(255, 230, 109, 0.1);
+}
+
+.pet-card:active {
+    transform: scale(0.98);
+}
+
+.pet-avatar {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto 12px;
+}
+
+.pet-info-text {
+    text-align: center;
+}
+
+.pet-info-text .pet-name {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.pet-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.pet-hp {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* ===== 宠物详情 ===== */
+#pet-detail-screen {
+    background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%);
+}
+
+.pet-detail-content {
+    padding: 80px 20px 20px;
+    text-align: center;
+}
+
+.pet-detail-avatar {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    margin: 0 auto 20px;
+}
+
+.pet-detail-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.pet-detail-type {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+.pet-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* ===== 图鉴 ===== */
+#pokedex-screen {
+    background: var(--bg-dark);
+}
+
+.filter-tabs {
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-tab.active {
+    background: var(--accent);
+    color: var(--bg-dark);
+    font-weight: 600;
+}
+
+.pokedex-grid {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.pokedex-item {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pokedex-item.caught {
+    background: var(--bg-card-hover);
+}
+
+.pokedex-item.unknown {
+    opacity: 0.4;
+}
+
+.pokedex-item .pet-emoji {
+    font-size: 2rem;
+}
+
+.pokedex-item .pet-id {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ===== 每日任务 ===== */
+#daily-quest-screen {
+    background: var(--bg-dark);
+}
+
+.quest-info-bar {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.quest-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.quest-progress {
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.quest-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quest-item {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 2px solid transparent;
+}
+
+.quest-item.completed {
+    border-color: var(--hp-green);
+}
+
+.quest-item.claimed {
+    opacity: 0.6;
+}
+
+.quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.quest-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.quest-status {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    background: var(--bg-card-hover);
+    border-radius: 10px;
+}
+
+.quest-item.completed .quest-status {
+    background: var(--hp-green);
+    color: white;
+}
+
+.quest-progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.quest-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--accent));
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.quest-reward {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+.claim-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--hp-green);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.quest-tip {
+    padding: 16px;
+    text-align: center;
+}
+
+.quest-tip p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 4px 0;
+}
+
+/* ===== NPC对战 ===== */
+.npc-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.npc-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.npc-card:active {
+    background: var(--bg-card-hover);
+}
+
+.npc-card.defeated {
+    opacity: 0.5;
+}
+
+.npc-avatar {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.npc-info {
+    flex: 1;
+}
+
+.npc-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.npc-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.npc-reward {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ===== 商店 ===== */
+#shop-screen {
+    background: var(--bg-dark);
+}
+
+.shop-tabs {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shop-tab {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.shop-tab.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+}
+
+.shop-items {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.shop-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background: var(--bg-card);
+    border-radius: 14px;
+}
+
+.item-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.item-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.item-price {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.buy-btn {
+    padding: 8px 16px;
+    background: var(--secondary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.buy-btn:disabled {
+    background: var(--bg-card-hover);
+    color: var(--text-muted);
+}
+
+/* ===== 设置 ===== */
+#settings-screen {
+    background: var(--bg-dark);
+}
+
+.settings-list {
+    padding: 16px;
+}
+
+.setting-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 14px;
+    margin-bottom: 12px;
+}
+
+.setting-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.setting-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.setting-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* 开关样式 */
+.switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-card-hover);
+    border-radius: 28px;
+    transition: 0.3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+input:checked + .slider {
+    background: var(--primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.setting-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.setting-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-light);
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.setting-action-btn.danger {
+    background: rgba(255, 71, 87, 0.2);
+    color: var(--hp-red);
+}
+
+.setting-action-btn:active {
+    background: var(--bg-card-hover);
+}
+
+/* ===== 测试结果 ===== */
+.test-results {
+    padding: 16px;
+}
+
+.test-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.test-result-item.pass {
+    border-left: 3px solid var(--hp-green);
+}
+
+.test-result-item.fail {
+    border-left: 3px solid var(--hp-red);
+}
+
+/* ===== 底部导航栏 ===== */
+.bottom-nav {
+    height: calc(var(--nav-height) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    height: var(--nav-height);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-item.active {
+    color: var(--accent);
+}
+
+.nav-icon {
+    font-size: 1.4rem;
+}
+
+.nav-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+}
+
+/* ===== 消息提示 ===== */
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    z-index: 1000;
+    text-align: center;
+    max-width: 80%;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* ===== 确认对话框 ===== */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.dialog-overlay.show {
+    display: flex;
+}
+
+.dialog-box {
+    background: var(--bg-light);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+}
+
+.dialog-box p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.dialog-buttons button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-no {
+    background: var(--bg-card);
+    color: var(--text-light);
+}
+
+.btn-yes {
+    background: var(--primary);
+    color: white;
+}
+
+/* ===== 闪光特效 ===== */
+.shiny-pet {
+    position: relative;
+}
+
+.shiny-pet .pet-avatar {
+    box-shadow: 0 0 20px gold, inset 0 0 10px gold;
+    animation: shinyGlow 2s ease-in-out infinite;
+}
+
+@keyframes shinyGlow {
+    0%, 100% { box-shadow: 0 0 20px gold, inset 0 0 10px gold; }
+    50% { box-shadow: 0 0 30px gold, inset 0 0 15px gold; }
+}
+
+/* ===== 滚动条美化 ===== */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-card-hover);
+    border-radius: 2px;
+}

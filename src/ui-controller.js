@@ -1,35 +1,58 @@
-// ===== UI控制器 =====
+// ===== UI控制器（手游版）=====
 
 class UIController {
     constructor(game, battle) {
         this.game = game;
         this.battle = battle;
-        this.currentScreen = 'main-menu';
+        this.currentScreen = 'home';
         this.init();
     }
 
     init() {
         this.bindEvents();
         this.updateHeader();
+        this.updateHomeScreen();
     }
 
     // 绑定事件
     bindEvents() {
-        // 菜单按钮
-        document.querySelectorAll('.menu-btn').forEach(btn => {
+        // 底部导航
+        document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', () => {
                 const screen = btn.dataset.screen;
-                if (screen) this.showScreen(screen);
+                if (screen) {
+                    this.showScreen(screen);
+                    this.updateNavActive(screen);
+                }
             });
         });
 
+        // 首页快捷操作
+        document.querySelectorAll('.action-card[data-screen]').forEach(card => {
+            card.addEventListener('click', () => {
+                const screen = card.dataset.screen;
+                if (screen) {
+                    this.showScreen(screen);
+                    this.updateNavActive(screen);
+                }
+            });
+        });
+
+        // 每日任务预览
+        document.querySelector('.daily-quest-preview')?.addEventListener('click', () => {
+            this.showScreen('daily-quest');
+        });
+
         // 返回按钮
-        document.querySelectorAll('.back-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.showScreen('main-menu'));
+        document.querySelectorAll('.nav-back').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.showScreen('home');
+                this.updateNavActive('home');
+            });
         });
 
         // 地图区域选择
-        document.querySelectorAll('.map-area').forEach(area => {
+        document.querySelectorAll('.area-card').forEach(area => {
             area.addEventListener('click', () => {
                 const areaId = area.dataset.area;
                 const minLevel = parseInt(area.dataset.minLevel);
@@ -46,25 +69,39 @@ class UIController {
             this.searchWildPet();
         });
 
-        // 战斗按钮
-        document.querySelectorAll('.battle-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+        // 战斗按钮 - 使用事件委托
+        document.getElementById('battle-actions')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.control-btn');
+            if (btn) {
                 const action = btn.dataset.action;
                 this.handleBattleAction(action);
+            }
+        });
+
+        // 面板关闭按钮
+        document.querySelectorAll('.panel-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.hideBattlePanels();
             });
         });
 
         // 图鉴筛选
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        document.querySelectorAll('.filter-tab').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.renderPokedex(btn.dataset.filter);
             });
         });
 
-        // 绑定每日任务相关事件（在显示每日任务屏幕时）
-        this.bindQuestEvents();
+        // 商店标签页
+        document.querySelectorAll('.shop-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                this.renderShop(tab.dataset.tab);
+            });
+        });
 
         // 设置按钮
         document.getElementById('save-btn')?.addEventListener('click', () => {
@@ -72,9 +109,8 @@ class UIController {
             this.showToast('游戏已存档');
         });
 
-        document.getElementById('load-btn')?.addEventListener('click', () => {
-            this.game.loadGame();
-            this.showToast('存档已读取');
+        document.getElementById('test-btn')?.addEventListener('click', () => {
+            this.runTests();
         });
 
         document.getElementById('reset-btn')?.addEventListener('click', () => {
@@ -82,10 +118,6 @@ class UIController {
                 this.game.resetGame();
                 location.reload();
             });
-        });
-
-        document.getElementById('test-btn')?.addEventListener('click', () => {
-            this.runTests();
         });
 
         // 设置开关
@@ -112,6 +144,27 @@ class UIController {
             this.confirmCallback = null;
             this.hideConfirm();
         });
+
+        // 每日任务领取
+        document.getElementById('quest-list')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('claim-btn')) {
+                const questId = e.target.dataset.questId;
+                if (questId && dailyQuestSystem) {
+                    const result = dailyQuestSystem.claimReward(questId);
+                    if (result.success) {
+                        this.showToast(result.message);
+                        this.renderDailyQuests();
+                        this.updateHeader();
+                        this.updateQuestBadge();
+                    }
+                }
+            }
+        });
+
+        // 设置按钮（右上角）
+        document.querySelector('.icon-btn[data-screen="settings"]')?.addEventListener('click', () => {
+            this.showScreen('settings');
+        });
     }
 
     // 切换屏幕
@@ -124,12 +177,12 @@ class UIController {
             this.currentScreen = screenId;
             
             // 刷新特定屏幕内容
+            if (screenId === 'home') this.updateHomeScreen();
             if (screenId === 'pets') this.renderPetsList();
             if (screenId === 'pokedex') this.renderPokedex('all');
             if (screenId === 'battle-npc') this.renderNPClist();
             if (screenId === 'shop') {
-                this.renderShop();
-                // 记录访问商店
+                this.renderShop('balls');
                 if (dailyQuestSystem) dailyQuestSystem.onVisitShop();
             }
             if (screenId === 'explore') this.renderMap();
@@ -137,16 +190,71 @@ class UIController {
         }
     }
 
+    // 更新底部导航激活状态
+    updateNavActive(screenId) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.screen === screenId) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+    // 更新首页显示
+    updateHomeScreen() {
+        const activePet = this.game.player.pets[this.game.player.activePetIndex];
+        if (!activePet) return;
+
+        // 更新宠物信息
+        document.getElementById('home-pet-avatar').textContent = activePet.emoji;
+        document.getElementById('home-pet-name').textContent = activePet.name;
+        document.getElementById('home-pet-level').textContent = `Lv.${activePet.level}`;
+        
+        // 更新HP条
+        const hpPercent = (activePet.currentHp / activePet.stats.hp) * 100;
+        document.getElementById('home-pet-hp').style.width = `${hpPercent}%`;
+        document.getElementById('home-pet-hp-text').textContent = `${activePet.currentHp}/${activePet.stats.hp}`;
+        
+        // 闪光标记
+        const shinyBadge = document.getElementById('home-pet-shiny');
+        if (shinyBadge) {
+            shinyBadge.style.display = activePet.isShiny ? 'flex' : 'none';
+        }
+
+        // 更新每日任务预览
+        this.updateQuestPreview();
+    }
+
+    // 更新每日任务预览
+    updateQuestPreview() {
+        if (!dailyQuestSystem) return;
+        
+        const quests = dailyQuestSystem.getQuests();
+        const stats = dailyQuestSystem.getStats();
+        
+        // 更新进度文本
+        document.getElementById('quest-preview-text').textContent = `${stats.claimed}/${stats.total}`;
+        
+        // 更新徽章
+        this.updateQuestBadge();
+        
+        // 更新任务列表预览
+        const previewContainer = document.getElementById('preview-tasks');
+        if (previewContainer) {
+            previewContainer.innerHTML = quests.slice(0, 2).map(q => {
+                const status = q.claimed ? '✓' : q.completed ? '!' : '•';
+                return `<span class="mini-task">${status} ${q.name}</span>`;
+            }).join('');
+        }
+    }
+
     // 更新头部信息
     updateHeader() {
-        // 显示玩家等级（基于出战宠物等级或玩家等级）
+        document.getElementById('player-coins').textContent = this.game.player.coins;
         const activePet = this.game.player.pets[this.game.player.activePetIndex];
         if (activePet) {
             document.getElementById('player-level').textContent = `Lv.${activePet.level}`;
-        } else {
-            document.getElementById('player-level').textContent = `Lv.${this.game.player.level}`;
         }
-        document.getElementById('player-coins').textContent = `💰 ${this.game.player.coins}`;
     }
 
     // 渲染地图
@@ -154,16 +262,12 @@ class UIController {
         const activePet = this.game.player.pets[this.game.player.activePetIndex];
         const playerLevel = activePet ? activePet.level : 1;
         
-        document.querySelectorAll('.map-area').forEach(area => {
+        document.querySelectorAll('.area-card').forEach(area => {
             const minLevel = parseInt(area.dataset.minLevel);
             if (playerLevel < minLevel) {
                 area.classList.add('locked');
-                area.style.opacity = '0.5';
-                area.style.cursor = 'not-allowed';
             } else {
                 area.classList.remove('locked');
-                area.style.opacity = '1';
-                area.style.cursor = 'pointer';
             }
         });
     }
@@ -173,14 +277,13 @@ class UIController {
         const area = AREAS[areaId];
         if (!area) return;
 
-        document.getElementById('current-area-name').textContent = `正在探索 ${area.name}`;
-        document.querySelector('.area-visual').style.background = this.getAreaBackground(areaId);
+        document.getElementById('current-area-name').textContent = area.name;
         
         this.showScreen('exploring');
         this.currentAreaId = areaId;
         
         document.getElementById('explore-status').textContent = '草丛中似乎有什么动静...';
-        document.getElementById('encounter-spot').innerHTML = '<span class="grass-rustle">🌿</span>';
+        document.getElementById('encounter-spot').innerHTML = '<div class="grass-animation">🌿</div>';
     }
 
     // 搜索野生宠物
@@ -191,35 +294,22 @@ class UIController {
             const isShiny = pet.isShiny;
             
             document.getElementById('encounter-spot').innerHTML = `
-                <span class="pet-emoji ${isShiny ? 'shiny-encounter' : ''}" style="font-size: 4rem; ${isShiny ? 'filter: drop-shadow(0 0 20px gold);' : ''}">${pet.emoji}${isShiny ? '✨' : ''}</span>
+                <div class="pet-emoji" style="font-size: 5rem; ${isShiny ? 'filter: drop-shadow(0 0 30px gold);' : ''}">${pet.emoji}${isShiny ? '✨' : ''}</div>
             `;
             
             if (isShiny) {
                 document.getElementById('explore-status').innerHTML = 
-                    `✨ 发现<strong style="color: gold;">闪光</strong> Lv.${pet.level} 的 ${pet.name}！ ✨`;
+                    `✨ <strong style="color: gold;">闪光</strong> Lv.${pet.level} 的 ${pet.name} 出现了！`;
                 this.showToast('✨ 发现闪光宠物！');
             } else {
                 document.getElementById('explore-status').textContent = 
                     `发现了 Lv.${pet.level} 的 ${pet.name}！`;
             }
             
-            // 延迟进入战斗
             setTimeout(() => {
                 this.startBattle(pet);
-            }, isShiny ? 2500 : 1500); // 闪光宠物多停留一会儿
+            }, isShiny ? 2500 : 1500);
         }
-    }
-
-    // 获取区域背景色
-    getAreaBackground(areaId) {
-        const backgrounds = {
-            meadow: 'radial-gradient(ellipse at center, rgba(126,211,33,0.2) 0%, transparent 70%)',
-            forest: 'radial-gradient(ellipse at center, rgba(30,100,30,0.2) 0%, transparent 70%)',
-            cave: 'radial-gradient(ellipse at center, rgba(100,100,100,0.2) 0%, transparent 70%)',
-            lake: 'radial-gradient(ellipse at center, rgba(74,144,226,0.2) 0%, transparent 70%)',
-            volcano: 'radial-gradient(ellipse at center, rgba(255,100,50,0.2) 0%, transparent 70%)'
-        };
-        return backgrounds[areaId] || backgrounds.meadow;
     }
 
     // 开始战斗
@@ -239,60 +329,60 @@ class UIController {
         const playerPet = state.playerPet;
         const enemyPet = state.enemyPet;
 
-        // 更新敌方信息
+        // 敌方信息
         const enemyNameEl = document.getElementById('enemy-name');
-        enemyNameEl.textContent = (enemyPet.isShiny ? '✨ ' : '') + enemyPet.name + (enemyPet.isShiny ? ' ✨' : '');
-        if (enemyPet.isShiny) {
-            enemyNameEl.style.color = '#ffd700';
-            enemyNameEl.style.textShadow = '0 0 10px gold';
-        } else {
-            enemyNameEl.style.color = '';
-            enemyNameEl.style.textShadow = '';
-        }
+        enemyNameEl.textContent = (enemyPet.isShiny ? '✨' : '') + enemyPet.name;
+        enemyNameEl.style.color = enemyPet.isShiny ? 'gold' : '';
+        
         document.getElementById('enemy-level').textContent = `Lv.${enemyPet.level}`;
         document.getElementById('enemy-hp-text').textContent = `${enemyPet.currentHp}/${enemyPet.stats.hp}`;
         document.getElementById('enemy-hp-bar').style.width = `${(enemyPet.currentHp / enemyPet.stats.hp) * 100}%`;
-        document.getElementById('enemy-hp-bar').className = this.getHpBarClass(enemyPet.currentHp / enemyPet.stats.hp);
+        document.getElementById('enemy-hp-bar').className = 'hp-bar ' + this.getHpBarClass(enemyPet.currentHp / enemyPet.stats.hp);
         
-        // 闪光宠物特效
         const enemySprite = document.getElementById('enemy-sprite');
         enemySprite.querySelector('.pet-emoji').textContent = enemyPet.emoji;
-        enemySprite.className = 'battle-pet enemy-pet' + (enemyPet.isShiny ? ' shiny-pet' : '');
+        enemySprite.className = 'pet-sprite' + (enemyPet.isShiny ? ' shiny-pet' : '');
 
-        // 更新我方信息
+        // 我方信息
         document.getElementById('player-pet-name').textContent = playerPet.name;
         document.getElementById('player-pet-level').textContent = `Lv.${playerPet.level}`;
         document.getElementById('player-hp-text').textContent = `${playerPet.currentHp}/${playerPet.stats.hp}`;
         document.getElementById('player-hp-bar').style.width = `${(playerPet.currentHp / playerPet.stats.hp) * 100}%`;
-        document.getElementById('player-hp-bar').className = this.getHpBarClass(playerPet.currentHp / playerPet.stats.hp);
+        document.getElementById('player-hp-bar').className = 'hp-bar ' + this.getHpBarClass(playerPet.currentHp / playerPet.stats.hp);
         
-        // 闪光宠物特效
         const playerSprite = document.getElementById('player-sprite');
         playerSprite.querySelector('.pet-emoji').textContent = playerPet.emoji;
-        playerSprite.className = 'battle-pet player-pet' + (playerPet.isShiny ? ' shiny-pet' : '');
+        playerSprite.className = 'pet-sprite' + (playerPet.isShiny ? ' shiny-pet' : '');
 
         // 更新日志
         this.updateBattleLog(state.log);
 
-        // 显示操作按钮
-        document.getElementById('battle-actions').style.display = 'grid';
-        document.getElementById('skill-select').style.display = 'none';
-        document.getElementById('item-select').style.display = 'none';
-        document.getElementById('switch-select').style.display = 'none';
+        // 隐藏所有面板
+        this.hideBattlePanels();
+        document.getElementById('battle-actions').style.display = 'block';
     }
 
     // 获取HP条颜色类
     getHpBarClass(ratio) {
-        if (ratio <= 0.2) return 'hp-bar red';
-        if (ratio <= 0.5) return 'hp-bar yellow';
-        return 'hp-bar';
+        if (ratio <= 0.2) return 'red';
+        if (ratio <= 0.5) return 'yellow';
+        return '';
+    }
+
+    // 隐藏战斗面板
+    hideBattlePanels() {
+        ['skill-select', 'item-select', 'switch-select', 'catch-select'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
     }
 
     // 更新战斗日志
     updateBattleLog(logs) {
         const logContainer = document.getElementById('battle-log');
-        logContainer.innerHTML = logs.slice(-5).map(log => `<p>${log}</p>`).join('');
-        logContainer.scrollTop = logContainer.scrollHeight;
+        if (logContainer) {
+            logContainer.innerHTML = `<div class="log-content">${logs[logs.length - 1]}</div>`;
+        }
     }
 
     // 处理战斗行动
@@ -330,27 +420,25 @@ class UIController {
 
         state.playerPet.skills.forEach(skillId => {
             const skill = SKILLS[skillId];
-            if (skill) {
-                const btn = document.createElement('button');
-                btn.className = 'skill-btn';
-                btn.innerHTML = `
-                    <span class="skill-name">${skill.name}</span>
-                    <span class="skill-info">威力:${skill.power} 命中:${skill.accuracy}%</span>
-                `;
-                btn.addEventListener('click', () => {
-                    this.executeBattleAction('skill', skillId);
-                });
-                skillsGrid.appendChild(btn);
-            }
+            if (!skill) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'shop-item';
+            btn.innerHTML = `
+                <div class="item-icon">${skill.type === 'fire' ? '🔥' : skill.type === 'water' ? '💧' : skill.type === 'grass' ? '🌿' : skill.type === 'electric' ? '⚡' : skill.type === 'earth' ? '🪨' : skill.type === 'dark' ? '🌑' : '⚔️'}</div>
+                <div class="item-info">
+                    <div class="item-name">${skill.name}</div>
+                    <div class="item-desc">威力:${skill.power} 命中:${skill.accuracy}%</div>
+                </div>
+            `;
+            btn.addEventListener('click', () => {
+                this.executeBattleAction('skill', skillId);
+            });
+            skillsGrid.appendChild(btn);
         });
 
         document.getElementById('battle-actions').style.display = 'none';
         document.getElementById('skill-select').style.display = 'block';
-
-        document.querySelector('#skill-select .back-btn-small').onclick = () => {
-            document.getElementById('skill-select').style.display = 'none';
-            document.getElementById('battle-actions').style.display = 'grid';
-        };
     }
 
     // 显示道具选择
@@ -358,68 +446,69 @@ class UIController {
         const itemsGrid = document.getElementById('items-grid');
         itemsGrid.innerHTML = '';
 
-        Object.entries(this.game.player.inventory).forEach(([itemId, count]) => {
+        const items = ['potion', 'superpotion', 'hyperpotion'];
+        
+        items.forEach(itemId => {
+            const item = ITEMS[itemId];
+            const count = this.game.player.inventory[itemId] || 0;
+            
+            const btn = document.createElement('button');
+            btn.className = 'shop-item';
+            btn.disabled = count <= 0;
+            btn.innerHTML = `
+                <div class="item-icon">${item.emoji}</div>
+                <div class="item-info">
+                    <div class="item-name">${item.name} x${count}</div>
+                    <div class="item-desc">${item.desc}</div>
+                </div>
+            `;
+            
             if (count > 0) {
-                const item = ITEMS[itemId];
-                if (item && item.heal) { // 只显示回复道具
-                    const btn = document.createElement('button');
-                    btn.className = 'item-btn';
-                    btn.innerHTML = `
-                        <span class="item-name">${item.emoji} ${item.name} x${count}</span>
-                        <span class="item-info">${item.desc}</span>
-                    `;
-                    btn.addEventListener('click', () => {
-                        this.executeBattleAction('item', itemId);
-                    });
-                    itemsGrid.appendChild(btn);
-                }
+                btn.addEventListener('click', () => {
+                    this.executeBattleAction('item', itemId);
+                });
             }
+            
+            itemsGrid.appendChild(btn);
         });
 
         document.getElementById('battle-actions').style.display = 'none';
         document.getElementById('item-select').style.display = 'block';
-
-        document.querySelector('#item-select .back-btn-small').onclick = () => {
-            document.getElementById('item-select').style.display = 'none';
-            document.getElementById('battle-actions').style.display = 'grid';
-        };
     }
 
     // 显示捕捉选择
     showCatchSelect() {
-        const itemsGrid = document.getElementById('items-grid');
-        itemsGrid.innerHTML = '';
+        const catchGrid = document.getElementById('catch-grid');
+        catchGrid.innerHTML = '';
 
         const balls = ['pokeball', 'greatball', 'ultraball'];
-        balls.forEach(itemId => {
-            const count = this.game.player.inventory[itemId] || 0;
+        
+        balls.forEach(ballId => {
+            const item = ITEMS[ballId];
+            const count = this.game.player.inventory[ballId] || 0;
+            
+            const btn = document.createElement('button');
+            btn.className = 'shop-item';
+            btn.disabled = count <= 0;
+            btn.innerHTML = `
+                <div class="item-icon">${item.emoji}</div>
+                <div class="item-info">
+                    <div class="item-name">${item.name} x${count}</div>
+                    <div class="item-desc">捕捉率: ${Math.floor(item.catchRate * 100)}%</div>
+                </div>
+            `;
+            
             if (count > 0) {
-                const item = ITEMS[itemId];
-                const btn = document.createElement('button');
-                btn.className = 'item-btn';
-                btn.innerHTML = `
-                    <span class="item-name">${item.emoji} ${item.name} x${count}</span>
-                    <span class="item-info">${item.desc}</span>
-                `;
                 btn.addEventListener('click', () => {
-                    this.executeBattleAction('catch', itemId);
+                    this.executeBattleAction('catch', ballId);
                 });
-                itemsGrid.appendChild(btn);
             }
+            
+            catchGrid.appendChild(btn);
         });
 
-        if (itemsGrid.children.length === 0) {
-            this.showToast('没有精灵球！');
-            return;
-        }
-
         document.getElementById('battle-actions').style.display = 'none';
-        document.getElementById('item-select').style.display = 'block';
-
-        document.querySelector('#item-select .back-btn-small').onclick = () => {
-            document.getElementById('item-select').style.display = 'none';
-            document.getElementById('battle-actions').style.display = 'grid';
-        };
+        document.getElementById('catch-select').style.display = 'block';
     }
 
     // 显示切换宠物
@@ -429,17 +518,20 @@ class UIController {
 
         this.game.player.pets.forEach((pet, index) => {
             const btn = document.createElement('button');
-            btn.className = 'switch-btn';
-            btn.innerHTML = `
-                <span>${pet.emoji} ${pet.name}</span>
-                <span>Lv.${pet.level} HP:${pet.currentHp}/${pet.stats.hp}</span>
-            `;
+            btn.className = 'npc-card';
             if (index === this.game.player.activePetIndex) {
-                btn.style.borderColor = 'var(--accent)';
+                btn.style.border = '2px solid var(--accent)';
             }
             if (pet.currentHp <= 0) {
                 btn.style.opacity = '0.5';
             }
+            btn.innerHTML = `
+                <div class="npc-avatar">${pet.emoji}</div>
+                <div class="npc-info">
+                    <div class="npc-name">${pet.name} ${index === this.game.player.activePetIndex ? '(出战中)' : ''}</div>
+                    <div class="npc-desc">Lv.${pet.level} HP:${pet.currentHp}/${pet.stats.hp}</div>
+                </div>
+            `;
             btn.addEventListener('click', () => {
                 this.executeBattleAction('switch', index);
             });
@@ -448,11 +540,6 @@ class UIController {
 
         document.getElementById('battle-actions').style.display = 'none';
         document.getElementById('switch-select').style.display = 'block';
-
-        document.querySelector('#switch-select .back-btn-small').onclick = () => {
-            document.getElementById('switch-select').style.display = 'none';
-            document.getElementById('battle-actions').style.display = 'grid';
-        };
     }
 
     // 执行战斗行动
@@ -478,25 +565,21 @@ class UIController {
         if (result.caught) message = '捕捉成功！';
         if (result.escaped) message = '成功逃跑！';
 
-        if (result.exp) message += `\n获得 ${result.exp} 经验`;
-        if (result.coins) message += `\n获得 ${result.coins} 金币`;
+        if (result.exp) message += ` 获得 ${result.exp} 经验`;
+        if (result.coins) message += ` ${result.coins} 金币`;
 
-        this.showToast(message.replace(/\n/g, ' '));
+        this.showToast(message);
         
-        // 更新每日任务进度
         if (dailyQuestSystem) {
-            if (result.victory) {
-                dailyQuestSystem.onWinBattle();
-            }
-            if (result.caught) {
-                dailyQuestSystem.onCatchPet(result.caughtPet);
-            }
+            if (result.victory) dailyQuestSystem.onWinBattle();
+            if (result.caught) dailyQuestSystem.onCatchPet(result.caughtPet);
             this.updateQuestBadge();
         }
         
         this.battle.reset();
         this.updateHeader();
-        this.showScreen('main-menu');
+        this.showScreen('home');
+        this.updateNavActive('home');
     }
 
     // 渲染宠物列表
@@ -506,12 +589,12 @@ class UIController {
 
         this.game.player.pets.forEach((pet, index) => {
             const card = document.createElement('div');
-            card.className = 'pet-card' + (index === this.game.player.activePetIndex ? ' active' : '') + (pet.isShiny ? ' shiny-pet' : '');
+            card.className = 'pet-card' + (index === this.game.player.activePetIndex ? ' active' : '');
             card.innerHTML = `
                 <div class="pet-avatar" style="${pet.isShiny ? 'filter: drop-shadow(0 0 10px gold);' : ''}">${pet.emoji}${pet.isShiny ? '✨' : ''}</div>
                 <div class="pet-info-text">
-                    <div class="pet-name">${pet.name} ${pet.isShiny ? '<span style="color:gold;">✨</span>' : ''} ${index === this.game.player.activePetIndex ? '(出战中)' : ''}</div>
-                    <div class="pet-meta">Lv.${pet.level} | ${PET_TYPES[pet.type.toUpperCase()].emoji} ${PET_TYPES[pet.type.toUpperCase()].display}</div>
+                    <span class="pet-name">${pet.name} ${pet.isShiny ? '✨' : ''}</span>
+                    <div class="pet-meta">${PET_TYPES[pet.type.toUpperCase()].emoji} Lv.${pet.level}</div>
                     <div class="pet-hp">HP: ${pet.currentHp}/${pet.stats.hp}</div>
                 </div>
             `;
@@ -528,10 +611,10 @@ class UIController {
         const typeInfo = PET_TYPES[pet.type.toUpperCase()];
         
         card.innerHTML = `
-            <div class="pet-detail-avatar" style="${pet.isShiny ? 'filter: drop-shadow(0 0 20px gold);' : ''}">${pet.emoji}${pet.isShiny ? '<span style="font-size: 2rem;">✨</span>' : ''}</div>
-            <div class="pet-detail-name" style="${pet.isShiny ? 'color: gold; text-shadow: 0 0 10px gold;' : ''}">${pet.name}${pet.isShiny ? ' ✨' : ''}</div>
+            <div class="pet-detail-avatar" style="${pet.isShiny ? 'filter: drop-shadow(0 0 20px gold);' : ''}">${pet.emoji}${pet.isShiny ? '✨' : ''}</div>
+            <div class="pet-detail-name" style="${pet.isShiny ? 'color: gold;' : ''}">${pet.name}${pet.isShiny ? ' ✨' : ''}</div>
             <span class="pet-detail-type type-${pet.type}">${typeInfo.emoji} ${typeInfo.display}</span>
-            ${pet.isShiny ? '<div style="color: gold; font-size: 0.9rem; margin: 5px 0;">✨ 闪光宠物 ✨</div>' : ''}
+            
             <div class="pet-detail-stats">
                 <div class="stat-box">
                     <div class="stat-label">等级</div>
@@ -555,28 +638,22 @@ class UIController {
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">经验</div>
-                    <div class="stat-value">${pet.level >= 100 ? 'MAX' : EXP_TABLE.getExpToNextLevel(pet.level)}</div>
+                    <div class="stat-value">${pet.level >= 100 ? 'MAX' : pet.expToNext}</div>
                 </div>
             </div>
-            <div class="pet-exp-bar">
-                <div class="exp-label">升级到 Lv.${Math.min(100, pet.level + 1)}</div>
-                <div class="exp-progress-bar">
-                    <div class="exp-fill" style="width: ${EXP_TABLE.getLevelProgress(pet.totalExp, pet.level)}%"></div>
-                </div>
-                <div class="exp-text">${EXP_TABLE.getLevelProgress(pet.totalExp, pet.level)}%</div>
-            </div>
-            <div class="pet-detail-skills">
-                <h4>技能</h4>
+            
+            <div style="margin-top: 20px; padding: 16px; background: var(--bg-card); border-radius: 12px; text-align: left;">
+                <div style="font-weight: 600; margin-bottom: 10px;">技能</div>
                 ${pet.skills.map(skillId => {
                     const skill = SKILLS[skillId];
-                    return skill ? `<div class="skill-item">
-                        <span>${skill.name}</span>
-                        <span>威力:${skill.power} 命中:${skill.accuracy}%</span>
-                    </div>` : '';
+                    return skill ? `<div style="font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid var(--border-color);">${skill.name} (威力:${skill.power})</div>` : '';
                 }).join('')}
             </div>
+            
             ${index !== this.game.player.activePetIndex ? `
-                <button class="action-btn" id="switch-to-btn">🔄 设为出战</button>
+                <button class="action-card primary" id="switch-to-btn" style="margin-top: 20px;">
+                    <span>🔄 设为出战宠物</span>
+                </button>
             ` : ''}
         `;
 
@@ -591,22 +668,21 @@ class UIController {
 
     // 渲染图鉴
     renderPokedex(filter = 'all') {
-        const grid = document.getElementById('pokedex-grid');
-        grid.innerHTML = '';
+        document.getElementById('pokedex-count').textContent = 
+            `${this.game.player.pokedex.size}/${Object.keys(PETS_DATA).length}`;
+        
+        const container = document.getElementById('pokedex-grid');
+        container.innerHTML = '';
 
-        const progress = this.game.getPokedexProgress();
-        document.getElementById('pokedex-count').textContent = `已收集: ${progress.caught}/${progress.total}`;
-        document.getElementById('pokedex-percent').textContent = `${progress.percentage}%`;
-
-        Object.values(PETS_DATA).forEach((pet, index) => {
+        Object.entries(PETS_DATA).forEach(([id, pet], index) => {
             if (filter !== 'all' && pet.type !== filter) return;
-
-            const isCaught = this.game.player.pokedex.has(pet.id);
+            
+            const isCaught = this.game.player.pokedex.has(id);
             const item = document.createElement('div');
-            item.className = `pokedex-item ${isCaught ? 'caught' : 'unknown'}`;
+            item.className = 'pokedex-item' + (isCaught ? ' caught' : ' unknown');
             item.innerHTML = `
-                <span class="pokedex-icon">${isCaught ? pet.emoji : '❓'}</span>
-                <span class="pokedex-id">#${String(index + 1).padStart(3, '0')}</span>
+                <span class="pet-emoji">${isCaught ? pet.emoji : '❓'}</span>
+                <span class="pet-id">#${String(index + 1).padStart(3, '0')}</span>
             `;
             
             if (isCaught) {
@@ -615,7 +691,7 @@ class UIController {
                 });
             }
             
-            grid.appendChild(item);
+            container.appendChild(item);
         });
     }
 
@@ -628,40 +704,20 @@ class UIController {
             <div class="pet-detail-avatar">${pet.emoji}</div>
             <div class="pet-detail-name">${pet.name}</div>
             <span class="pet-detail-type type-${pet.type}">${typeInfo.emoji} ${typeInfo.display}</span>
-            <p style="margin: 15px 0; color: var(--text-muted);">稀有度: ${this.getRarityText(pet.rarity)}</p>
+            <p style="margin: 16px 0; color: var(--text-muted); font-size: 0.9rem;">${this.getRarityText(pet.rarity)}</p>
             <div class="pet-detail-stats">
-                <div class="stat-box">
-                    <div class="stat-label">HP</div>
-                    <div class="stat-value">${pet.baseStats.hp}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">攻击</div>
-                    <div class="stat-value">${pet.baseStats.attack}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">防御</div>
-                    <div class="stat-value">${pet.baseStats.defense}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">速度</div>
-                    <div class="stat-value">${pet.baseStats.speed}</div>
-                </div>
+                <div class="stat-box"><div class="stat-label">HP</div><div class="stat-value">${pet.baseStats.hp}</div></div>
+                <div class="stat-box"><div class="stat-label">攻击</div><div class="stat-value">${pet.baseStats.attack}</div></div>
+                <div class="stat-box"><div class="stat-label">防御</div><div class="stat-value">${pet.baseStats.defense}</div></div>
+                <div class="stat-box"><div class="stat-label">速度</div><div class="stat-value">${pet.baseStats.speed}</div></div>
             </div>
-            ${pet.evoTo ? `<p style="margin-top: 15px;">Lv.${pet.evoLevel} 进化为 ${PETS_DATA[pet.evoTo]?.name || '???'}</p>` : '<p style="margin-top: 15px;">最终形态</p>'}
         `;
-
+        
         this.showScreen('pokedex-detail');
     }
 
-    // 获取稀有度文本
     getRarityText(rarity) {
-        const texts = {
-            common: '普通',
-            uncommon: '稀有',
-            rare: '珍贵',
-            epic: '史诗',
-            legendary: '传说'
-        };
+        const texts = { common: '普通', uncommon: '稀有', rare: '珍贵', epic: '史诗', legendary: '传说' };
         return texts[rarity] || rarity;
     }
 
@@ -677,7 +733,7 @@ class UIController {
             card.innerHTML = `
                 <div class="npc-avatar">${trainer.emoji}</div>
                 <div class="npc-info">
-                    <div class="npc-name">${trainer.name} ${isDefeated ? '✅' : ''}</div>
+                    <div class="npc-name">${trainer.name} ${isDefeated ? '✓' : ''}</div>
                     <div class="npc-desc">${trainer.desc}</div>
                 </div>
                 <div class="npc-reward">💰${trainer.reward}</div>
@@ -703,12 +759,17 @@ class UIController {
     }
 
     // 渲染商店
-    renderShop() {
+    renderShop(tab = 'balls') {
         document.getElementById('shop-coins').textContent = this.game.player.coins;
         const container = document.getElementById('shop-items');
         container.innerHTML = '';
 
-        Object.values(ITEMS).forEach(item => {
+        const items = tab === 'balls' ? 
+            ['pokeball', 'greatball', 'ultraball'] : 
+            ['potion', 'superpotion', 'hyperpotion'];
+
+        items.forEach(itemId => {
+            const item = ITEMS[itemId];
             const shopItem = document.createElement('div');
             shopItem.className = 'shop-item';
             shopItem.innerHTML = `
@@ -722,10 +783,10 @@ class UIController {
             `;
             
             shopItem.querySelector('.buy-btn').addEventListener('click', () => {
-                const result = this.game.buyItem(item.id);
+                const result = this.game.buyItem(itemId);
                 if (result.success) {
                     this.showToast(result.message);
-                    this.renderShop();
+                    this.renderShop(tab);
                 } else {
                     this.showToast(result.message);
                 }
@@ -735,12 +796,62 @@ class UIController {
         });
     }
 
+    // 渲染每日任务
+    renderDailyQuests() {
+        if (!dailyQuestSystem) return;
+
+        const quests = dailyQuestSystem.getQuests();
+        const stats = dailyQuestSystem.getStats();
+        const container = document.getElementById('quest-list');
+
+        document.getElementById('quest-date').textContent = dailyQuestSystem.getTodayString();
+        document.getElementById('quest-progress').textContent = `${stats.claimed}/${stats.total}`;
+
+        container.innerHTML = '';
+        quests.forEach(quest => {
+            const questItem = document.createElement('div');
+            questItem.className = 'quest-item' + (quest.completed ? ' completed' : '') + (quest.claimed ? ' claimed' : '');
+
+            const progressPercent = (quest.progress / quest.target) * 100;
+            const canClaim = quest.completed && !quest.claimed;
+
+            questItem.innerHTML = `
+                <div class="quest-header">
+                    <span class="quest-name">${quest.name}</span>
+                    <span class="quest-status">${quest.claimed ? '已领取' : quest.completed ? '可领取' : '进行中'}</span>
+                </div>
+                <div class="quest-progress-bar">
+                    <div class="quest-progress-fill" style="width: ${progressPercent}%"></div>
+                </div>
+                <div class="quest-reward">
+                    <span>💰 ${quest.reward.coins}</span>
+                    <span>⭐ ${quest.reward.exp} EXP</span>
+                </div>
+                ${canClaim ? `<button class="claim-btn" data-quest-id="${quest.id}">领取奖励</button>` : ''}
+            `;
+
+            container.appendChild(questItem);
+        });
+
+        this.updateQuestBadge();
+    }
+
+    // 更新任务徽章
+    updateQuestBadge() {
+        if (!dailyQuestSystem) return;
+        const hasClaimable = dailyQuestSystem.getQuests().some(q => q.completed && !q.claimed);
+        const badge = document.getElementById('quest-badge');
+        if (badge) {
+            badge.style.display = hasClaimable ? 'flex' : 'none';
+        }
+    }
+
     // 显示提示
     showToast(message) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
     // 显示确认对话框
@@ -765,109 +876,12 @@ class UIController {
             const item = document.createElement('div');
             item.className = `test-result-item ${result.status}`;
             item.innerHTML = `
-                <span class="test-icon">${result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏳'}</span>
-                <span class="test-name">${result.name}</span>
-                <span class="test-status">${result.message}</span>
+                <span>${result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏳'}</span>
+                <span>${result.name}</span>
             `;
             container.appendChild(item);
         });
 
         this.showScreen('test-result');
     }
-
-    // ========== 每日任务系统 ==========
-
-    // 绑定每日任务事件
-    bindQuestEvents() {
-        // 使用事件委托处理任务领取按钮
-        document.getElementById('quest-list')?.addEventListener('click', (e) => {
-            if (e.target.classList.contains('claim-btn')) {
-                const questId = e.target.dataset.questId;
-                if (questId && dailyQuestSystem) {
-                    const result = dailyQuestSystem.claimReward(questId);
-                    if (result.success) {
-                        this.showToast(result.message);
-                        this.renderDailyQuests();
-                        this.updateHeader();
-                        this.updateQuestBadge();
-                    }
-                }
-            }
-        });
-    }
-
-    // 渲染每日任务界面
-    renderDailyQuests() {
-        if (!dailyQuestSystem) return;
-
-        const quests = dailyQuestSystem.getQuests();
-        const stats = dailyQuestSystem.getStats();
-        const container = document.getElementById('quest-list');
-
-        // 更新日期显示
-        document.getElementById('quest-date').textContent = dailyQuestSystem.getTodayString();
-
-        // 更新进度
-        document.getElementById('quest-progress').textContent = 
-            `完成进度: ${stats.claimed}/${stats.total}`;
-
-        // 渲染任务列表
-        container.innerHTML = '';
-        quests.forEach(quest => {
-            const questItem = document.createElement('div');
-            questItem.className = `quest-item ${quest.completed ? 'completed' : ''} ${quest.claimed ? 'claimed' : ''}`;
-
-            const progressPercent = (quest.progress / quest.target) * 100;
-            const canClaim = quest.completed && !quest.claimed;
-
-            questItem.innerHTML = `
-                <div class="quest-header">
-                    <span class="quest-name">${quest.name}</span>
-                    <span class="quest-status">${
-                        quest.claimed ? '已领取' : 
-                        quest.completed ? '可领取' : '进行中'
-                    }</span>
-                </div>
-                <div class="quest-progress-bar">
-                    <div class="quest-progress-fill" style="width: ${progressPercent}%"></div>
-                </div>
-                <div class="quest-progress-text">${quest.progress} / ${quest.target}</div>
-                <div class="quest-reward">
-                    <span>💰 ${quest.reward.coins}</span>
-                    <span>⭐ ${quest.reward.exp} EXP</span>
-                </div>
-                ${canClaim ? `<button class="claim-btn" data-quest-id="${quest.id}">领取奖励</button>` : ''}
-            `;
-
-            container.appendChild(questItem);
-        });
-
-        this.updateQuestBadge();
-    }
-
-    // 更新任务徽章显示
-    updateQuestBadge() {
-        if (!dailyQuestSystem) return;
-        const stats = dailyQuestSystem.getStats();
-        const badge = document.getElementById('quest-badge');
-        if (badge) {
-            // 有已完成但未领取的任务时显示徽章
-            const hasClaimable = dailyQuestSystem.getQuests().some(q => q.completed && !q.claimed);
-            badge.style.display = hasClaimable ? 'flex' : 'none';
-        }
-    }
-
-    // 显示闪光遭遇特效
-    showShinyEncounter(pet) {
-        if (pet.isShiny) {
-            this.showToast('✨ 发现闪光宠物！');
-            // 添加闪光特效动画
-            const encounterSpot = document.getElementById('encounter-spot');
-            if (encounterSpot) {
-                encounterSpot.classList.add('shiny-encounter');
-                setTimeout(() => encounterSpot.classList.remove('shiny-encounter'), 500);
-            }
-        }
-    }
 }
-

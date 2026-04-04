@@ -21,16 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 更新UI
     ui.updateHeader();
+    ui.updateHomeScreen();
     ui.updateQuestBadge();
     
     // 显示欢迎提示
     const activePet = game.player.pets[game.player.activePetIndex];
     if (activePet && activePet.isStarter) {
-        ui.showToast(`🎮 欢迎来到宠物大冒险！你的初始伙伴是 Lv.${activePet.level} 的 ${activePet.name}！`);
+        ui.showToast(`🎮 欢迎来到宠物大冒险！`);
     }
     
     console.log('🐾 宠物大冒险 已加载！');
-    console.log('当前出战宠物:', game.player.pets[game.player.activePetIndex]?.name);
     console.log('✨ 闪光系统已启用，遭遇率 1/4096');
     console.log('📋 每日任务系统已启用');
 });

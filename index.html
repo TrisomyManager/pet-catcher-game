@@ -2,288 +2,474 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🐾 宠物大冒险 - Pet Adventure</title>
-    <link rel="stylesheet" href="src/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>🐾 宠物大冒险</title>
+    <link rel="stylesheet" href="src/styles-mobile.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div id="game-container">
-        <!-- 游戏标题 -->
+        <!-- 顶部状态栏 -->
         <header class="game-header">
-            <h1>🐾 宠物大冒险</h1>
-            <div class="player-stats">
-                <span id="player-level">Lv.5</span>
-                <span id="player-coins">💰 100</span>
+            <div class="header-left">
+                <span class="player-avatar">👤</span>
+                <div class="player-info">
+                    <span id="player-level">Lv.5</span>
+                    <div class="player-coins">
+                        <span class="coin-icon">💰</span>
+                        <span id="player-coins">100</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" data-screen="settings">
+                    <span class="btn-icon">⚙️</span>
+                </button>
             </div>
         </header>
 
-        <!-- 主菜单 -->
-        <div id="main-menu" class="screen active">
-            <div class="menu-grid">
-                <button class="menu-btn" data-screen="explore">
-                    <span class="icon">🗺️</span>
-                    <span>探索地图</span>
-                </button>
-                <button class="menu-btn" data-screen="pets">
-                    <span class="icon">🎒</span>
-                    <span>我的宠物</span>
-                </button>
-                <button class="menu-btn" data-screen="pokedex">
-                    <span class="icon">📖</span>
-                    <span>宠物图鉴</span>
-                </button>
-                <button class="menu-btn" data-screen="daily-quest">
-                    <span class="icon">📋</span>
-                    <span>每日任务</span>
-                    <span class="quest-badge" id="quest-badge" style="display:none">!</span>
-                </button>
-                <button class="menu-btn" data-screen="battle-npc">
-                    <span class="icon">⚔️</span>
-                    <span>挑战训练师</span>
-                </button>
-                <button class="menu-btn" data-screen="shop">
-                    <span class="icon">🏪</span>
-                    <span>道具商店</span>
-                </button>
-                <button class="menu-btn" data-screen="settings">
-                    <span class="icon">⚙️</span>
-                    <span>设置</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 地图探索 -->
-        <div id="explore-screen" class="screen">
-            <h2>🗺️ 选择探索区域</h2>
-            <div class="map-grid">
-                <div class="map-area" data-area="meadow" data-min-level="1">
-                    <span class="area-icon">🌿</span>
-                    <h3>青青草原</h3>
-                    <p>适合新手的区域</p>
-                    <span class="level-req">Lv.1+</span>
-                </div>
-                <div class="map-area" data-area="forest" data-min-level="5">
-                    <span class="area-icon">🌲</span>
-                    <h3>神秘森林</h3>
-                    <p>草系宠物的家园</p>
-                    <span class="level-req">Lv.5+</span>
-                </div>
-                <div class="map-area" data-area="cave" data-min-level="10">
-                    <span class="area-icon">⛰️</span>
-                    <h3>幽暗山洞</h3>
-                    <p>暗系宠物出没</p>
-                    <span class="level-req">Lv.10+</span>
-                </div>
-                <div class="map-area" data-area="lake" data-min-level="15">
-                    <span class="area-icon">💧</span>
-                    <h3>宁静湖泊</h3>
-                    <p>水系宠物的聚集地</p>
-                    <span class="level-req">Lv.15+</span>
-                </div>
-                <div class="map-area" data-area="volcano" data-min-level="20">
-                    <span class="area-icon">🌋</span>
-                    <h3>烈焰火山</h3>
-                    <p>火系宠物的领地</p>
-                    <span class="level-req">Lv.20+</span>
-                </div>
-            </div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 探索中 -->
-        <div id="exploring-screen" class="screen">
-            <div class="exploring-area">
-                <h2 id="current-area-name">正在探索...</h2>
-                <div class="area-visual">
-                    <div class="wild-encounter-spot" id="encounter-spot">
-                        <span class="grass-rustle">🌿</span>
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 首页/基地 -->
+            <div id="home-screen" class="screen active">
+                <!-- 当前出战宠物展示 -->
+                <div class="active-pet-showcase">
+                    <div class="pet-stage">
+                        <div class="pet-avatar-large" id="home-pet-avatar">🐢</div>
+                        <div class="pet-status-badges">
+                            <span class="badge" id="home-pet-shiny" style="display:none">✨</span>
+                            <span class="badge level-badge" id="home-pet-level">Lv.5</span>
+                        </div>
+                    </div>
+                    <div class="pet-quick-info">
+                        <h2 id="home-pet-name">草苗龟</h2>
+                        <div class="hp-bar-mini">
+                            <div class="hp-fill" id="home-pet-hp" style="width: 100%"></div>
+                            <span class="hp-text" id="home-pet-hp-text">20/20</span>
+                        </div>
                     </div>
                 </div>
-                <p id="explore-status">草丛中似乎有什么动静...</p>
-                <button id="search-btn" class="action-btn">🔍 仔细搜索</button>
-                <button class="back-btn">⬅️ 离开</button>
-            </div>
-        </div>
 
-        <!-- 战斗界面 -->
-        <div id="battle-screen" class="screen">
-            <div class="battle-arena">
-                <!-- 敌方宠物 -->
-                <div class="battle-side enemy-side">
-                    <div class="pet-info">
-                        <span id="enemy-name">野生宠物</span>
-                        <div class="hp-bar-container">
-                            <div class="hp-bar" id="enemy-hp-bar"></div>
-                            <span id="enemy-hp-text">20/20</span>
+                <!-- 快捷操作区 -->
+                <div class="quick-actions">
+                    <button class="action-card primary" data-screen="explore">
+                        <span class="card-icon">🗺️</span>
+                        <span class="card-title">开始探索</span>
+                        <span class="card-desc">寻找野生宠物</span>
+                    </button>
+                    <div class="action-row">
+                        <button class="action-card" data-screen="battle-npc">
+                            <span class="card-icon">⚔️</span>
+                            <span class="card-title">挑战</span>
+                        </button>
+                        <button class="action-card" data-screen="shop">
+                            <span class="card-icon">🏪</span>
+                            <span class="card-title">商店</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 每日任务预览 -->
+                <div class="daily-quest-preview" data-screen="daily-quest">
+                    <div class="preview-header">
+                        <span class="preview-title">📋 每日任务</span>
+                        <span class="preview-progress" id="quest-preview-text">0/3</span>
+                        <span class="quest-badge" id="quest-badge" style="display:none">!</span>
+                    </div>
+                    <div class="preview-tasks" id="preview-tasks">
+                        <span class="mini-task">加载中...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 探索页面 -->
+            <div id="explore-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>🗺️ 探索地图</h2>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="area-list">
+                    <div class="area-card" data-area="meadow" data-min-level="1">
+                        <div class="area-bg" style="background: linear-gradient(135deg, #7ed32133, #7ed32111)">
+                            <span class="area-icon">🌿</span>
                         </div>
-                        <span id="enemy-level" class="level-badge">Lv.1</span>
+                        <div class="area-info">
+                            <h3>青青草原</h3>
+                            <p class="area-desc">适合新手的区域</p>
+                            <div class="area-meta">
+                                <span class="level-tag">Lv.1+</span>
+                                <span class="area-type">草系</span>
+                            </div>
+                        </div>
+                        <div class="area-arrow">›</div>
+                    </div>
+                    <div class="area-card" data-area="forest" data-min-level="5">
+                        <div class="area-bg" style="background: linear-gradient(135deg, #228b2233, #228b2211)">
+                            <span class="area-icon">🌲</span>
+                        </div>
+                        <div class="area-info">
+                            <h3>神秘森林</h3>
+                            <p class="area-desc">草系宠物的家园</p>
+                            <div class="area-meta">
+                                <span class="level-tag">Lv.5+</span>
+                                <span class="area-type">草系</span>
+                            </div>
+                        </div>
+                        <div class="area-arrow">›</div>
+                    </div>
+                    <div class="area-card" data-area="cave" data-min-level="10">
+                        <div class="area-bg" style="background: linear-gradient(135deg, #4a4a4a33, #4a4a4a11)">
+                            <span class="area-icon">⛰️</span>
+                        </div>
+                        <div class="area-info">
+                            <h3>幽暗山洞</h3>
+                            <p class="area-desc">暗系宠物出没</p>
+                            <div class="area-meta">
+                                <span class="level-tag">Lv.10+</span>
+                                <span class="area-type">暗系</span>
+                            </div>
+                        </div>
+                        <div class="area-arrow">›</div>
+                    </div>
+                    <div class="area-card" data-area="lake" data-min-level="15">
+                        <div class="area-bg" style="background: linear-gradient(135deg, #4a90e233, #4a90e211)">
+                            <span class="area-icon">💧</span>
+                        </div>
+                        <div class="area-info">
+                            <h3>宁静湖泊</h3>
+                            <p class="area-desc">水系宠物聚集地</p>
+                            <div class="area-meta">
+                                <span class="level-tag">Lv.15+</span>
+                                <span class="area-type">水系</span>
+                            </div>
+                        </div>
+                        <div class="area-arrow">›</div>
+                    </div>
+                    <div class="area-card" data-area="volcano" data-min-level="20">
+                        <div class="area-bg" style="background: linear-gradient(135deg, #ff6b6b33, #ff6b6b11)">
+                            <span class="area-icon">🌋</span>
+                        </div>
+                        <div class="area-info">
+                            <h3>烈焰火山</h3>
+                            <p class="area-desc">火系宠物领地</p>
+                            <div class="area-meta">
+                                <span class="level-tag">Lv.20+</span>
+                                <span class="area-type">火系</span>
+                            </div>
+                        </div>
+                        <div class="area-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 探索中 -->
+            <div id="exploring-screen" class="screen">
+                <div class="explore-stage">
+                    <div class="area-name" id="current-area-name">青青草原</div>
+                    <div class="encounter-zone" id="encounter-spot">
+                        <div class="grass-animation">🌿</div>
+                    </div>
+                    <div class="encounter-status" id="explore-status">草丛中似乎有什么动静...</div>
+                </div>
+                <div class="explore-actions">
+                    <button id="search-btn" class="big-action-btn primary">
+                        <span class="btn-icon">🔍</span>
+                        <span>仔细搜索</span>
+                    </button>
+                    <button class="big-action-btn secondary nav-back">
+                        <span>离开</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 战斗界面 -->
+            <div id="battle-screen" class="screen">
+                <!-- 敌方 -->
+                <div class="battle-top">
+                    <div class="enemy-info">
+                        <div class="info-header">
+                            <span class="pet-name" id="enemy-name">野生宠物</span>
+                            <span class="level-tag" id="enemy-level">Lv.1</span>
+                        </div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar-bg">
+                                <div class="hp-bar" id="enemy-hp-bar"></div>
+                            </div>
+                            <span class="hp-text" id="enemy-hp-text">20/20</span>
+                        </div>
                     </div>
                     <div class="pet-sprite" id="enemy-sprite">
                         <span class="pet-emoji">❓</span>
                     </div>
                 </div>
 
-                <!-- VS 标志 -->
-                <div class="vs-indicator">⚡ VS ⚡</div>
+                <!-- 战斗特效区 -->
+                <div class="battle-arena">
+                    <div class="vs-badge">VS</div>
+                </div>
 
-                <!-- 我方宠物 -->
-                <div class="battle-side player-side">
+                <!-- 我方 -->
+                <div class="battle-bottom">
                     <div class="pet-sprite" id="player-sprite">
                         <span class="pet-emoji">❓</span>
                     </div>
-                    <div class="pet-info">
-                        <span id="player-pet-name">我的宠物</span>
-                        <div class="hp-bar-container">
-                            <div class="hp-bar" id="player-hp-bar"></div>
-                            <span id="player-hp-text">20/20</span>
+                    <div class="player-info">
+                        <div class="info-header">
+                            <span class="pet-name" id="player-pet-name">我的宠物</span>
+                            <span class="level-tag" id="player-pet-level">Lv.1</span>
                         </div>
-                        <span id="player-pet-level" class="level-badge">Lv.1</span>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar-bg">
+                                <div class="hp-bar" id="player-hp-bar"></div>
+                            </div>
+                            <span class="hp-text" id="player-hp-text">20/20</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 战斗日志 -->
+                <div class="battle-log" id="battle-log">
+                    <div class="log-content">战斗开始！</div>
+                </div>
+
+                <!-- 战斗操作 -->
+                <div class="battle-controls" id="battle-actions">
+                    <div class="control-grid">
+                        <button class="control-btn attack" data-action="attack">
+                            <span class="btn-icon">⚔️</span>
+                            <span>攻击</span>
+                        </button>
+                        <button class="control-btn skill" data-action="skill">
+                            <span class="btn-icon">✨</span>
+                            <span>技能</span>
+                        </button>
+                        <button class="control-btn item" data-action="item">
+                            <span class="btn-icon">🎒</span>
+                            <span>道具</span>
+                        </button>
+                        <button class="control-btn catch" data-action="catch">
+                            <span class="btn-icon">🎯</span>
+                            <span>捕捉</span>
+                        </button>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn switch" data-action="switch">
+                            <span>🔄 切换</span>
+                        </button>
+                        <button class="control-btn run" data-action="run">
+                            <span>🏃 逃跑</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 技能选择 -->
+                <div class="battle-panel" id="skill-select" style="display: none;">
+                    <div class="panel-header">
+                        <h3>选择技能</h3>
+                        <button class="panel-close">✕</button>
+                    </div>
+                    <div class="skills-grid" id="skills-grid"></div>
+                </div>
+
+                <!-- 道具选择 -->
+                <div class="battle-panel" id="item-select" style="display: none;">
+                    <div class="panel-header">
+                        <h3>选择道具</h3>
+                        <button class="panel-close">✕</button>
+                    </div>
+                    <div class="items-grid" id="items-grid"></div>
+                </div>
+
+                <!-- 切换宠物 -->
+                <div class="battle-panel" id="switch-select" style="display: none;">
+                    <div class="panel-header">
+                        <h3>切换宠物</h3>
+                        <button class="panel-close">✕</button>
+                    </div>
+                    <div class="switch-grid" id="switch-grid"></div>
+                </div>
+
+                <!-- 捕捉选择 -->
+                <div class="battle-panel" id="catch-select" style="display: none;">
+                    <div class="panel-header">
+                        <h3>选择精灵球</h3>
+                        <button class="panel-close">✕</button>
+                    </div>
+                    <div class="catch-grid" id="catch-grid"></div>
+                </div>
+            </div>
+
+            <!-- 宠物列表 -->
+            <div id="pets-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>🎒 我的宠物</h2>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="pets-grid" id="pets-list"></div>
+            </div>
+
+            <!-- 宠物详情 -->
+            <div id="pet-detail-screen" class="screen">
+                <div class="screen-header transparent">
+                    <button class="nav-back">⬅️</button>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="pet-detail-content" id="pet-detail-card"></div>
+            </div>
+
+            <!-- 图鉴 -->
+            <div id="pokedex-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>📖 图鉴</h2>
+                    <div class="header-stats" id="pokedex-count">0/25</div>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="fire">🔥</button>
+                    <button class="filter-tab" data-filter="water">💧</button>
+                    <button class="filter-tab" data-filter="grass">🌿</button>
+                    <button class="filter-tab" data-filter="electric">⚡</button>
+                    <button class="filter-tab" data-filter="earth">🪨</button>
+                    <button class="filter-tab" data-filter="dark">🌑</button>
+                </div>
+                <div class="pokedex-grid" id="pokedex-grid"></div>
+            </div>
+
+            <!-- 图鉴详情 -->
+            <div id="pokedex-detail-screen" class="screen">
+                <div class="screen-header transparent">
+                    <button class="nav-back">⬅️</button>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="pokedex-detail-content" id="pokedex-detail-card"></div>
+            </div>
+
+            <!-- 每日任务 -->
+            <div id="daily-quest-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>📋 每日任务</h2>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="quest-info-bar">
+                    <span class="quest-date" id="quest-date">2024-01-01</span>
+                    <span class="quest-progress" id="quest-progress">0/3</span>
+                </div>
+                <div class="quest-list" id="quest-list"></div>
+                <div class="quest-tip">
+                    <p>💡 完成任务可获得金币和经验</p>
+                    <p>⏰ 每天 0:00 自动刷新</p>
+                </div>
+            </div>
+
+            <!-- 训练师挑战 -->
+            <div id="battle-npc-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>⚔️ 挑战训练师</h2>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="npc-list" id="npc-list"></div>
+            </div>
+
+            <!-- 商店 -->
+            <div id="shop-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>🏪 商店</h2>
+                    <div class="header-stats">
+                        <span>💰</span>
+                        <span id="shop-coins">100</span>
+                    </div>
+                </div>
+                <div class="shop-tabs">
+                    <button class="shop-tab active" data-tab="balls">精灵球</button>
+                    <button class="shop-tab" data-tab="potions">药品</button>
+                </div>
+                <div class="shop-items" id="shop-items"></div>
+            </div>
+
+            <!-- 设置 -->
+            <div id="settings-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>⚙️ 设置</h2>
+                    <div class="placeholder"></div>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <span class="setting-name">音效</span>
+                            <span class="setting-desc">开启游戏音效</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="sound-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <span class="setting-name">动画效果</span>
+                            <span class="setting-desc">战斗动画和特效</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="anim-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-actions">
+                        <button id="save-btn" class="setting-action-btn">
+                            <span>💾</span>
+                            <span>手动存档</span>
+                        </button>
+                        <button id="test-btn" class="setting-action-btn">
+                            <span>🧪</span>
+                            <span>运行测试</span>
+                        </button>
+                        <button id="reset-btn" class="setting-action-btn danger">
+                            <span>🗑️</span>
+                            <span>重置游戏</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- 战斗日志 -->
-            <div class="battle-log" id="battle-log">
-                <p>战斗开始！</p>
-            </div>
-
-            <!-- 战斗操作 -->
-            <div class="battle-actions" id="battle-actions">
-                <button class="battle-btn" data-action="attack">⚔️ 普通攻击</button>
-                <button class="battle-btn" data-action="skill">✨ 使用技能</button>
-                <button class="battle-btn" data-action="item">🎒 使用道具</button>
-                <button class="battle-btn" data-action="catch">🎯 捕捉</button>
-                <button class="battle-btn" data-action="switch">🔄 切换宠物</button>
-                <button class="battle-btn" data-action="run">🏃 逃跑</button>
-            </div>
-
-            <!-- 技能选择 -->
-            <div class="skill-select" id="skill-select" style="display: none;">
-                <div class="skills-grid" id="skills-grid"></div>
-                <button class="back-btn-small">⬅️ 返回</button>
-            </div>
-
-            <!-- 道具选择 -->
-            <div class="item-select" id="item-select" style="display: none;">
-                <div class="items-grid" id="items-grid"></div>
-                <button class="back-btn-small">⬅️ 返回</button>
-            </div>
-
-            <!-- 切换宠物 -->
-            <div class="switch-select" id="switch-select" style="display: none;">
-                <div class="switch-grid" id="switch-grid"></div>
-                <button class="back-btn-small">⬅️ 返回</button>
-            </div>
-        </div>
-
-        <!-- 我的宠物 -->
-        <div id="pets-screen" class="screen">
-            <h2>🎒 我的宠物队伍</h2>
-            <div class="pets-list" id="pets-list"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 宠物详情 -->
-        <div id="pet-detail-screen" class="screen">
-            <div class="pet-detail-card" id="pet-detail-card"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 宠物图鉴 -->
-        <div id="pokedex-screen" class="screen">
-            <h2>📖 宠物图鉴</h2>
-            <div class="pokedex-stats">
-                <span id="pokedex-count">已收集: 0/25</span>
-                <span id="pokedex-percent">0%</span>
-            </div>
-            <div class="pokedex-filter">
-                <button class="filter-btn active" data-filter="all">全部</button>
-                <button class="filter-btn" data-filter="fire">🔥 火</button>
-                <button class="filter-btn" data-filter="water">💧 水</button>
-                <button class="filter-btn" data-filter="grass">🌿 草</button>
-                <button class="filter-btn" data-filter="electric">⚡ 电</button>
-                <button class="filter-btn" data-filter="earth">🪨 土</button>
-                <button class="filter-btn" data-filter="dark">🌑 暗</button>
-            </div>
-            <div class="pokedex-grid" id="pokedex-grid"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 图鉴详情 -->
-        <div id="pokedex-detail-screen" class="screen">
-            <div class="pokedex-detail-card" id="pokedex-detail-card"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 每日任务 -->
-        <div id="daily-quest-screen" class="screen">
-            <h2>📋 每日任务</h2>
-            <div class="quest-date" id="quest-date">2024-01-01</div>
-            <div class="quest-progress" id="quest-progress">完成进度: 0/3</div>
-            <div class="quest-list" id="quest-list"></div>
-            <div class="quest-reward-hint">
-                <p>💡 完成任务可获得金币和经验奖励！</p>
-                <p>⏰ 任务每天 0:00 自动刷新</p>
-            </div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- NPC对战 -->
-        <div id="battle-npc-screen" class="screen">
-            <h2>⚔️ 选择挑战对象</h2>
-            <div class="npc-list" id="npc-list"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 商店 -->
-        <div id="shop-screen" class="screen">
-            <h2>🏪 道具商店</h2>
-            <div class="shop-coins">💰 <span id="shop-coins">100</span></div>
-            <div class="shop-items" id="shop-items"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
-
-        <!-- 设置 -->
-        <div id="settings-screen" class="screen">
-            <h2>⚙️ 设置</h2>
-            <div class="settings-list">
-                <div class="setting-item">
-                    <span>音效</span>
-                    <label class="switch">
-                        <input type="checkbox" id="sound-toggle" checked>
-                        <span class="slider"></span>
-                    </label>
+            <!-- 测试结果 -->
+            <div id="test-result-screen" class="screen">
+                <div class="screen-header">
+                    <button class="nav-back">⬅️</button>
+                    <h2>🧪 测试结果</h2>
+                    <div class="placeholder"></div>
                 </div>
-                <div class="setting-item">
-                    <span>动画效果</span>
-                    <label class="switch">
-                        <input type="checkbox" id="anim-toggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <button id="save-btn" class="setting-btn">💾 手动存档</button>
-                </div>
-                <div class="setting-item">
-                    <button id="load-btn" class="setting-btn">📂 读取存档</button>
-                </div>
-                <div class="setting-item">
-                    <button id="reset-btn" class="setting-btn danger">🗑️ 重置游戏</button>
-                </div>
-                <div class="setting-item">
-                    <button id="test-btn" class="setting-btn">🧪 运行测试</button>
-                </div>
+                <div class="test-results" id="test-results"></div>
             </div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
+        </main>
 
-        <!-- 测试结果显示 -->
-        <div id="test-result-screen" class="screen">
-            <h2>🧪 测试结果</h2>
-            <div class="test-results" id="test-results"></div>
-            <button class="back-btn">⬅️ 返回</button>
-        </div>
+        <!-- 底部导航栏 -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-screen="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">基地</span>
+            </button>
+            <button class="nav-item" data-screen="explore">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-label">探索</span>
+            </button>
+            <button class="nav-item" data-screen="pets">
+                <span class="nav-icon">🎒</span>
+                <span class="nav-label">宠物</span>
+            </button>
+            <button class="nav-item" data-screen="pokedex">
+                <span class="nav-icon">📖</span>
+                <span class="nav-label">图鉴</span>
+            </button>
+        </nav>
 
         <!-- 消息提示 -->
         <div id="toast" class="toast"></div>
@@ -293,8 +479,8 @@
             <div class="dialog-box">
                 <p id="confirm-message">确认操作？</p>
                 <div class="dialog-buttons">
-                    <button id="confirm-yes" class="btn-yes">确定</button>
                     <button id="confirm-no" class="btn-no">取消</button>
+                    <button id="confirm-yes" class="btn-yes">确定</button>
                 </div>
             </div>
         </div>
